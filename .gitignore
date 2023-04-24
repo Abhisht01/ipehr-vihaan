@@ -1,0 +1,11 @@
+config.json
+/.idea
+/.vscode
+/bin
+*.antlr
+*.DS_Store
+data/storage*
+data/local.db
+.blockchain.key
+
+db/local.db

@@ -1,0 +1,28 @@
+FROM golang:1.19.0-alpine3.16 AS build
+
+RUN apk update && \
+    apk add --no-cache gcc musl-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /srv
+
+COPY ./src/go.mod go.mod
+COPY ./src/go.sum go.sum
+
+RUN go mod download
+
+COPY src/ .
+COPY stat-config.json.example ./config.json
+COPY db/ ./db
+
+RUN go build -o ./bin/ipehr-stats ./cmd/stat/main.go
+
+FROM alpine:3.16
+
+WORKDIR /srv
+
+COPY --from=build /srv/bin/ /srv
+COPY --from=build /srv/config.json /srv/config.json
+COPY --from=build /srv/db /srv/db
+
+CMD ["./ipehr-stats", "-config=./config.json"]
